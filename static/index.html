@@ -5,24 +5,121 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bateria Porcaria - Gestão</title>
     <style>
-        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        body { background-color: #121212; color: #e0e0e0; margin: 0; padding: 20px; }
-        .container { max-width: 1000px; margin: auto; }
-        header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #333; padding-bottom: 15px; margin-bottom: 20px; }
-        h1, h2 { color: #f5a623; margin: 0; }
-        .card { background: #1e1e1e; padding: 20px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
-        input, select, button { padding: 10px; margin: 5px 0; border-radius: 5px; border: 1px solid #333; background: #2a2a2a; color: #fff; width: 100%; }
-        button { background: #f5a623; color: #121212; font-weight: bold; cursor: pointer; border: none; }
-        button:hover { background: #e09216; }
-        .btn-danger { background: #d32f2f; color: #fff; }
-        .btn-danger:hover { background: #b71c1c; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th, td { border: 1px solid #333; padding: 12px; text-align: left; }
-        th { background: #2a2a2a; color: #f5a623; }
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        .hidden { display: none; }
-        .status-logged { color: #4caf50; font-weight: bold; }
-    </style>
+    * { 
+        box-sizing: border-box; 
+        font-family: 'Montserrat', 'Segoe UI', Tahoma, sans-serif; 
+    }
+    body { 
+        background-color: #0d0d0d; 
+        color: #f5f5f5; 
+        margin: 0; 
+        padding: 20px; 
+    }
+    .container { 
+        max-width: 1000px; 
+        margin: auto; 
+    }
+    header { 
+        display: flex; 
+        justify-content: space-between; 
+        align-items: center; 
+        border-bottom: 2px solid #ff007f; 
+        padding-bottom: 15px; 
+        margin-bottom: 25px; 
+    }
+    h1 { 
+        color: #ff007f; 
+        margin: 0; 
+        font-size: 1.8rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    h2, h3 { 
+        color: #ffffff; 
+        margin: 0 0 10px 0; 
+    }
+    .card { 
+        background: #181818; 
+        padding: 20px; 
+        border-radius: 10px; 
+        margin-bottom: 20px; 
+        border: 1px solid #2a2a2a;
+        box-shadow: 0 4px 12px rgba(255, 0, 127, 0.05); 
+    }
+    input, select, button { 
+        padding: 12px; 
+        margin: 6px 0; 
+        border-radius: 6px; 
+        border: 1px solid #333; 
+        background: #242424; 
+        color: #fff; 
+        width: 100%; 
+        font-size: 0.95rem;
+    }
+    input:focus, select:focus {
+        outline: none;
+        border-color: #ff007f;
+    }
+    button { 
+        background: #ff007f; 
+        color: #ffffff; 
+        font-weight: bold; 
+        cursor: pointer; 
+        border: none; 
+        transition: background 0.2s, transform 0.1s;
+    }
+    button:hover { 
+        background: #d6006b; 
+    }
+    button:active {
+        transform: scale(0.98);
+    }
+    .btn-danger { 
+        background: #2a2a2a; 
+        color: #ff007f; 
+        border: 1px solid #ff007f;
+    }
+    .btn-danger:hover { 
+        background: #ff007f; 
+        color: #ffffff;
+    }
+    table { 
+        width: 100%; 
+        border-collapse: collapse; 
+        margin-top: 15px; 
+    }
+    th, td { 
+        border: 1px solid #2a2a2a; 
+        padding: 12px; 
+        text-align: left; 
+    }
+    th { 
+        background: #242424; 
+        color: #ff007f; 
+        font-weight: 600;
+    }
+    tr:nth-child(even) {
+        background-color: #141414;
+    }
+    .grid { 
+        display: grid; 
+        grid-template-columns: 1fr 1fr; 
+        gap: 20px; 
+    }
+    @media (max-width: 768px) {
+        .grid { grid-template-columns: 1fr; }
+    }
+    .hidden { display: none; }
+    .status-logged { 
+        color: #ff007f; 
+        font-weight: bold; 
+    }
+    hr {
+        border: 0;
+        height: 1px;
+        background: #2a2a2a;
+    }
+</style>
 </head>
 <body>
     <div class="container">
