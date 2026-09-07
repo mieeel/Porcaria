@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bateria Porcaria - Gestão</title>
+    <style>
+        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #121212; color: #e0e0e0; margin: 0; padding: 20px; }
+        .container { max-width: 1000px; margin: auto; }
+        header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #333; padding-bottom: 15px; margin-bottom: 20px; }
+        h1, h2 { color: #f5a623; margin: 0; }
+        .card { background: #1e1e1e; padding: 20px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
+        input, select, button { padding: 10px; margin: 5px 0; border-radius: 5px; border: 1px solid #333; background: #2a2a2a; color: #fff; width: 100%; }
+        button { background: #f5a623; color: #121212; font-weight: bold; cursor: pointer; border: none; }
+        button:hover { background: #e09216; }
+        .btn-danger { background: #d32f2f; color: #fff; }
+        .btn-danger:hover { background: #b71c1c; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { border: 1px solid #333; padding: 12px; text-align: left; }
+        th { background: #2a2a2a; color: #f5a623; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .hidden { display: none; }
+        .status-logged { color: #4caf50; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🥁 Bateria Porcaria - UNESP Rio Claro.</h1>
+            <div id="auth-status">
+                <span id="user-info">Navegando como Visitante</span>
+                <button id="btn-login-toggle" onclick="toggleLoginModal()" style="width: auto; padding: 8px 15px;">Login Diretoria</button>
+            </div>
+        </header>
+
+        <!-- MODAL DE LOGIN -->
+        <div id="login-card" class="card hidden">
+            <h2>Area Restrita - Diretoria</h2>
+            <input type="text" id="login-username" placeholder="Usuario (ex: admin)">
+            <input type="password" id="login-password" placeholder="Senha">
+            <button onclick="realizarLogin()">Entrar</button>
+        </div>
+
+        <div class="grid">
+            <!-- SEÇÃO DE INVENTÁRIO -->
+            <div class="card">
+                <h2>Inventario de Instrumentos</h2>
+                <div id="form-inventario" class="hidden" style="margin-top: 15px;">
+                    <h3>Adicionar Instrumento</h3>
+                    <input type="text" id="inv-nome" placeholder="Nome (ex: Surdo 22')">
+                    <input type="text" id="inv-categoria" placeholder="Categoria (ex: Grave)">
+                    <input type="number" id="inv-qtd" placeholder="Quantidade">
+                    <input type="text" id="inv-estado" placeholder="Estado (ex: Bom, Manutenção)">
+                    <button onclick="cadastrarInventario()">Salvar Instrumento</button>
+                    <hr style="border-color: #333; margin: 15px 0;">
+                </div>
+                
+                <table id="tabela-inventario">
+                    <thead>
+                        <tr><th>Nome</th><th>Cat.</th><th>Qtd</th><th>Estado</th><th>Ação</th></tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+
+            <!-- SEÇÃO DE LISTA DE COMPRAS -->
+            <div class="card">
+                <h2>Lista de Compras Pendentes</h2>
+                <div id="form-compras" class="hidden" style="margin-top: 15px;">
+                    <h3>Adicionar a Lista</h3>
+                    <input type="text" id="compra-item" placeholder="Item (ex: Pele de Caixa 14')">
+                    <input type="number" id="compra-qtd" placeholder="Quantidade">
+                    <button onclick="cadastrarCompra()">Adicionar a Lista</button>
+                    <hr style="border-color: #333; margin: 15px 0;">
+                </div>
+
+                <table id="tabela-compras">
+                    <thead>
+                        <tr><th>Item</th><th>Qtd</th><th>Status</th></tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = "http://127.0.0.1:8000";
+        let token = localStorage.getItem("token") || "";
+
+        function atualizarInterface() {
+            const loggedIn = !!token;
+            document.getElementById("form-inventario").classList.toggle("hidden", !loggedIn);
+            document.getElementById("form-compras").classList.toggle("hidden", !loggedIn);
+            
+            const userInfo = document.getElementById("user-info");
+            const btnLogin = document.getElementById("btn-login-toggle");
+
+            if (loggedIn) {
+                userInfo.innerHTML = `<span class="status-logged">● Logado como Diretoria</span>`;
+                btnLogin.innerText = "Sair";
+                btnLogin.onclick = fazerLogout;
+                document.getElementById("login-card").classList.add("hidden");
+            } else {
+                userInfo.innerText = "Navegando como Visitante";
+                btnLogin.innerText = "Login Diretoria";
+                btnLogin.onclick = toggleLoginModal;
+            }
+
+            carregarInventario();
+            carregarCompras();
+        }
+
+        function toggleLoginModal() {
+            document.getElementById("login-card").classList.toggle("hidden");
+        }
+
+        async function realizarLogin() {
+            const user = document.getElementById("login-username").value;
+            const pass = document.getElementById("login-password").value;
+
+            const formData = new URLSearchParams();
+            formData.append("username", user);
+            formData.append("password", pass);
+
+            const res = await fetch(`${API_URL}/login`, {
+                method: "POST",
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                body: formData
+            });
+
+            if (res.ok) {
+                const data = await res.json();
+                token = data.access_token;
+                localStorage.setItem("token", token);
+                atualizarInterface();
+            } else {
+                alert("Usuario ou senha incorretos!");
+            }
+        }
+
+        function fazerLogout() {
+            token = "";
+            localStorage.removeItem("token");
+            atualizarInterface();
+        }
+
+        async function carregarInventario() {
+            const res = await fetch(`${API_URL}/inventario`);
+            const dados = await res.json();
+            const tbody = document.querySelector("#tabela-inventario tbody");
+            tbody.innerHTML = "";
+
+            dados.forEach(item => {
+                const btnDeletar = token 
+                    ? `<button class="btn-danger" style="padding: 4px 8px; font-size: 12px;" onclick="deletarInventario(${item.id})">X</button>` 
+                    : `-`;
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${item.nome}</td>
+                        <td>${item.categoria}</td>
+                        <td>${item.quantidade}</td>
+                        <td>${item.estado}</td>
+                        <td>${btnDeletar}</td>
+                    </tr>
+                `;
+            });
+        }
+
+        async function cadastrarInventario() {
+            const body = {
+                nome: document.getElementById("inv-nome").value,
+                categoria: document.getElementById("inv-categoria").value,
+                quantidade: parseInt(document.getElementById("inv-qtd").value),
+                estado: document.getElementById("inv-estado").value
+            };
+
+            const res = await fetch(`${API_URL}/inventario`, {
+                method: "POST",
+                headers: { 
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                },
+                body: JSON.stringify(body)
+            });
+
+            if (res.ok) {
+                carregarInventario();
+                document.getElementById("inv-nome").value = "";
+                document.getElementById("inv-categoria").value = "";
+                document.getElementById("inv-qtd").value = "";
+                document.getElementById("inv-estado").value = "";
+            }
+        }
+
+        async function deletarInventario(id) {
+            if (!confirm("Deseja mesmo remover este item?")) return;
+            
+            await fetch(`${API_URL}/inventario/${id}`, {
+                method: "DELETE",
+                headers: { "Authorization": `Bearer ${token}` }
+            });
+            carregarInventario();
+        }
+
+        async function carregarCompras() {
+            const res = await fetch(`${API_URL}/compras`);
+            const dados = await res.json();
+            const tbody = document.querySelector("#tabela-compras tbody");
+            tbody.innerHTML = "";
+
+            dados.forEach(c => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${c.item}</td>
+                        <td>${c.quantidade}</td>
+                        <td>${c.status}</td>
+                    </tr>
+                `;
+            });
+        }
+
+        async function cadastrarCompra() {
+            const body = {
+                item: document.getElementById("compra-item").value,
+                quantidade: parseInt(document.getElementById("compra-qtd").value)
+            };
+
+            const res = await fetch(`${API_URL}/compras`, {
+                method: "POST",
+                headers: { 
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`
+                },
+                body: JSON.stringify(body)
+            });
+
+            if (res.ok) {
+                carregarCompras();
+                document.getElementById("compra-item").value = "";
+                document.getElementById("compra-qtd").value = "";
+            }
+        }
+
+        // Carrega dados ao abrir a página
+        atualizarInterface();
+    </script>
+</body>
+</html>

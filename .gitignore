@@ -1,0 +1,19 @@
+# Ambiente Virtual Python
+venv/
+env/
+ENV/
+*.venv
+
+# Cache do Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Banco de dados SQLite local (gerado ao rodar o servidor)
+*.db
+*.sqlite3
+
+# Arquivos de configuracao do VS Code/IDE
+.vscode/
+.idea/
