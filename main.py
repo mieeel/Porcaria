@@ -152,10 +152,10 @@ def login(form_data: OAuth2PasswordRequestForm = Depends()):
     )
     return {"access_token": access_token, "token_type": "bearer"}
 
+# --- ROTAS PROTEGIDAS ---
 
-# --- ROTAS PÚBLICAS ---
 @app.get("/inventario")
-def listar_inventario():
+def listar_inventario(usuario: str = Depends(obter_usuario_atual)):
     conn = get_db()
     cursor = conn.cursor()
     itens = cursor.execute("SELECT * FROM inventario").fetchall()
@@ -163,15 +163,13 @@ def listar_inventario():
     return [dict(item) for item in itens]
 
 @app.get("/compras")
-def listar_compras():
+def listar_compras(usuario: str = Depends(obter_usuario_atual)):
     conn = get_db()
     cursor = conn.cursor()
     compras = cursor.execute("SELECT * FROM compras").fetchall()
     conn.close()
     return [dict(c) for c in compras]
 
-
-# --- ROTAS PROTEGIDAS ---
 @app.post("/inventario")
 def criar_item_inventario(item: ItemInventario, usuario: str = Depends(obter_usuario_atual)):
     conn = get_db()
